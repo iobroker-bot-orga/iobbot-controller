@@ -1,4 +1,4 @@
-name: iobbot controller
+name: IobBot Controller
 
 on:
   #repository_dispatch:
