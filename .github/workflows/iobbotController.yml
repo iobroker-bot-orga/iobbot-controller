@@ -1,0 +1,33 @@
+name: Check LATEST repositories
+
+on:
+  #repository_dispatch:
+  #  types: [check-latest-repositories]
+
+  workflow_dispatch:
+  #  inputs:
+  #    repository:
+  #      type: string
+  #      required: true
+
+  schedule:
+    # * is a special character in YAML, so you have to quote this string
+    # every friday at 1:00
+    - cron:  '*/15 * * * *'
+
+jobs:
+  iobbot-controller:
+    name: iobbot controller
+    if: |
+      github.repository == 'iobroker-bot-orga/check-tasks'
+      
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm i
+      - run: node iobbotController.js
+        env:
+          IOBBOT_GITHUB_TOKEN: ${{ secrets.IOBBOT_GITHUB_TOKEN }}
