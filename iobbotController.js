@@ -237,13 +237,13 @@ async function main() {
     //}
 
     const notifications = await github.getNotifications();
-    debug (`detected ${notifications.length} notification(s)`);
+    console.log (`[INFO] ${notifications.length} notification(s) detected`);
 
     for (const notification of notifications) {
         notification && await processNotification(notification);
-        // TODO - mark as processed
     };
 }
 
 process.env.OWN_GITHUB_TOKEN = process.env.IOBBOT_GITHUB_TOKEN;
+console.log (`[INFO] ioBroker-Bot controller started`);
 main();
