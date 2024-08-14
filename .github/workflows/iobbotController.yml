@@ -19,7 +19,7 @@ jobs:
   iobbot-controller:
     name: iobbot controller
     if: |
-      github.repository == 'iobroker-bot-orga/check-tasks'
+      github.repository == 'iobroker-bot-orga/iobbot-controller'
       
     runs-on: ubuntu-latest
     steps:
