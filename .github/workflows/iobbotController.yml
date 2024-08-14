@@ -1,4 +1,4 @@
-name: Check LATEST repositories
+name: iobbot controller
 
 on:
   #repository_dispatch:
