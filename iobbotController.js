@@ -94,10 +94,12 @@ async function addThanksALot( notification, id ) {
     text = text + '  \n';
     text = text + `I will recheck for new issues later. So it\'s no problem if this issue has been closed premature. \n`;
     text = text + '  \n';
-//    text = text + 'You may start a new check at any time by adding the following comment to this issue:  \n';
-//    text = text + '  \n';
-//    text = text + '\`@iobroker-bot recheck\`\n';
-//    text = text + '  \n';
+    text = text + 'You may start a new check at any time by adding the following comment to this issue:  \n';
+    text = text + '  \n';
+    text = text + '\`@iobroker-bot recheck\`\n';
+    text = text + '  \n';
+    text = text + 'Please note that I (and the server at GitHub) have always plenty of work to do. So it may last up to 30 minutes until you see a reaction. I will drop a comment here as soon as I start processing. \n';
+    text = text + '  \n';
     text = text + 'Feel free to contact me (@iobroker-bot) if you have any questions or feel that an issue is incorrectly flagged.  ';
     text = text + '_Let\'s work together for the best user experience._';
     text = text + '  \n';
