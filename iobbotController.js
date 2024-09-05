@@ -58,7 +58,6 @@ async function executeReCheck( notification, id ) {
     let text = '';
     text = text + 'Thanks for contacting me.  \n';
     text = text + 'I received your request to recheck this repository. I will start doing my work soon.  \n';
-    text = text + 'I will close an existing issue and create a new one if still any issues are to be evaluated and potentially to be fixed.  \n';
     text = text + '  \n';
     text = text + 'Thanks for spending your time and working at an ioBroker adapter.  \n';
     text = text + '  \n';
