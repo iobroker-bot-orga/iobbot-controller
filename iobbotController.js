@@ -19,7 +19,7 @@ function debug (text){
 }
 
 function triggerRepoCheck(owner, adapter) {
-    const url = `${owner}/${adapter} --force`;
+    const url = `${owner}/${adapter} --recheck`;
     debug(`trigger rep checker for ${url}`+ ((opts.dry)?'[DRY RUN]':''));
     if (opts.dry) return;
 
