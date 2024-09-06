@@ -18,8 +18,8 @@ function debug (text){
     }
 }
 
-function triggerRepoCheck(owner, adapter) {
-    const url = `${owner}/${adapter} --recheck`;
+function triggerRepoCheck(owner, adapter, flag) {
+    const url = `${owner}/${adapter} ${flag}`;
     debug(`trigger rep checker for ${url}`+ ((opts.dry)?'[DRY RUN]':''));
     if (opts.dry) return;
 
@@ -43,7 +43,9 @@ async function executeHelp( notification, id ) {
     text = text + 'I will try to explain my possibilities. Currently I understand the following commands: \n';
     text = text + '  \n';
     text = text + '- recheck  \n';
-    text = text + '  I will perform a new repository check and update, create or close my issue containing the results.  \n';
+    text = text + '  I will perform a new repository check and update or close my issue containing the results.  \n';
+    text = text + '- recreate  \n';
+    text = text + '  I will perform a new repository check and recreate or close my issue containing the results.  \n';
     text = text + '  \n';
     text = text + '- help  \n';
     text = text + '  I will list all commands I understand at a new comment.  \n';
@@ -55,9 +57,26 @@ async function executeHelp( notification, id ) {
 
 async function executeReCheck( notification, id ) {
 
+    // let text = '';
+    // text = text + 'Thanks for contacting me.  \n';
+    // text = text + 'I received your request to recheck this repository. I will start doing my work soon.  \n';
+    // text = text + '  \n';
+    // text = text + 'Thanks for spending your time and working at an ioBroker adapter.  \n';
+    // text = text + '  \n';
+    // text = text + '_your_  \n';
+    // text = text + '_ioBroker Check and Service Bot_  \n';
+
+    // await github.addComment( notification.repository.owner.login, notification.repository.name, id, text );
+
+    triggerRepoCheck( notification.repository.owner.login, notification.repository.name, '--recheck' );
+}
+
+async function executeReCreate( notification, id ) {
+
     let text = '';
     text = text + 'Thanks for contacting me.  \n';
-    text = text + 'I received your request to recheck this repository. I will start doing my work soon.  \n';
+    text = text + 'I received your request to recheck this repository and to recreate the checker issue. I will start doing my work soon.\n';
+    text = text + 'I will close an existing issue and create a new one if any issues are to be reported.  \n';
     text = text + '  \n';
     text = text + 'Thanks for spending your time and working at an ioBroker adapter.  \n';
     text = text + '  \n';
@@ -66,7 +85,7 @@ async function executeReCheck( notification, id ) {
 
     await github.addComment( notification.repository.owner.login, notification.repository.name, id, text );
 
-    triggerRepoCheck( notification.repository.owner.login, notification.repository.name );
+    triggerRepoCheck( notification.repository.owner.login, notification.repository.name, '--recreate' );
 }
 
 async function executeUnknown( notification, id, cmd ) {
@@ -106,6 +125,8 @@ async function addThanksALot( notification, id ) {
     text = text + '_ioBroker Check and Service Bot_  \n';
     
     await github.addComment( notification.repository.owner.login, notification.repository.name, id, text );
+
+    triggerRepoCheck( notification.repository.owner.login, notification.repository.name, '--erroronly' );
 }
 
 async function processIssue( notification, id ) {
@@ -152,14 +173,15 @@ async function processIssue( notification, id ) {
                     await executeReCheck( notification, issue.number);
                 } else if (cmd === 'RECHECK') {
                     await executeReCheck( notification, issue.number);
+                } else if (cmd === 'RECREATE') {
+                    await executeReCreate( notification, issue.number);
                 } else if (cmd === 'HELP') {
                     await executeHelp( notification, issue.number);
                 } else {
                     console.log(`[WARNING] ${cmd} cannot be recognized.`);
                     await executeUnknown(notification, issue.number, cmd);
                 }
-            }
-        
+            }        
         }
     } else {
         console.log( `[INFO] issue ${issue.number} has NO comment(s) attached`);
