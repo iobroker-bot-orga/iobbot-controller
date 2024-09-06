@@ -126,7 +126,7 @@ async function addThanksALot( notification, id ) {
     
     await github.addComment( notification.repository.owner.login, notification.repository.name, id, text );
 
-    triggerRepoCheck( notification.repository.owner.login, notification.repository.name, '--erroronly' );
+    //triggerRepoCheck( notification.repository.owner.login, notification.repository.name, '--erroronly' );
 }
 
 async function processIssue( notification, id ) {
