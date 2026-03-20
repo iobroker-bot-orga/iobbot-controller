@@ -44,16 +44,16 @@ jobs:
           THREE_HOURS_IN_SECONDS=10800
           CYCLES=$((THREE_HOURS_IN_SECONDS / WAIT_SECONDS))
 
-          echo "Starting loop: $CYCLES cycles of $WAIT_MINUTES minutes each (~3 hours total)"
+          echo "$(date -u +"%Y-%m-%dT%H:%M:%SZ") Starting loop: $CYCLES cycles of $WAIT_MINUTES minutes each (~3 hours total)"
 
           for i in $(seq 1 "$CYCLES"); do
-            echo "Cycle $i/$CYCLES: waiting $WAIT_MINUTES minutes..."
+            echo "$(date -u +"%Y-%m-%dT%H:%M:%SZ") Cycle $i/$CYCLES: waiting $WAIT_MINUTES minutes..."
             sleep "$WAIT_SECONDS"
-            echo "Cycle $i/$CYCLES: triggering iobbotController.yml..."
-            gh workflow run iobbotController.yml || echo "Warning: failed to trigger iobbotController.yml in cycle $i"
+            echo "$(date -u +"%Y-%m-%dT%H:%M:%SZ") Cycle $i/$CYCLES: triggering iobbotController.yml..."
+            gh workflow run iobbotController.yml --repo iobroker-bot-orga/iobbot-controller || echo "$(date -u +"%Y-%m-%dT%H:%M:%SZ") Warning: failed to trigger iobbotController.yml in cycle $i"
           done
 
-          echo "3 hours completed. Restarting starter workflow..."
-          gh workflow run iobbotControllerStarter.yml -f wait_minutes="$WAIT_MINUTES"
+          echo "$(date -u +"%Y-%m-%dT%H:%M:%SZ") 3 hours completed. Restarting starter workflow..."
+          gh workflow run iobbotControllerStarter.yml --repo iobroker-bot-orga/iobbot-controller -f wait_minutes="$WAIT_MINUTES"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
