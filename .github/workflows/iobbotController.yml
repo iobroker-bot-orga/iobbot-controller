@@ -12,10 +12,10 @@ on:
   #      type: string
   #      required: true
 
-  schedule:
-    # * is a special character in YAML, so you have to quote this string
-    # every friday at 1:00
-    - cron:  '*/15 * * * *'
+  # schedule:
+  #   # * is a special character in YAML, so you have to quote this string
+  #   # every friday at 1:00
+  #   - cron:  '*/15 * * * *'
 
 jobs:
   iobbot-controller:
