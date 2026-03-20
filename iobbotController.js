@@ -267,14 +267,6 @@ async function main() {
     };
 }
 
-const _origLog = console.log.bind(console);
-const _origError = console.error.bind(console);
-const _origWarn = console.warn.bind(console);
-const ts = () => new Date().toISOString();
-console.log = (...args) => _origLog(ts(), ...args);
-console.error = (...args) => _origError(ts(), ...args);
-console.warn = (...args) => _origWarn(ts(), ...args);
-
 process.env.OWN_GITHUB_TOKEN = process.env.IOBBOT_GITHUB_TOKEN;
 console.log (`[INFO] ioBroker-Bot controller started`);
 main();
