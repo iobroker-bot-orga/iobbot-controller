@@ -6,14 +6,14 @@ on:
       wait_minutes:
         description: 'Time to wait in minutes between controller runs'
         type: number
-        default: 5
+        default: 10
 
   workflow_dispatch:
     inputs:
       wait_minutes:
         description: 'Time to wait in minutes between controller runs'
         type: string
-        default: '5'
+        default: '10'
 
   schedule:
     # * is a special character in YAML, so you have to quote this string
@@ -39,7 +39,7 @@ jobs:
       - name: Run controller in loop for ~3 hours then restart
         run: |
           WAIT_MINUTES_INPUT="${{ inputs.wait_minutes }}"
-          WAIT_MINUTES=${WAIT_MINUTES_INPUT:-5}
+          WAIT_MINUTES=${WAIT_MINUTES_INPUT:-10}
           WAIT_SECONDS=$((WAIT_MINUTES * 60))
           THREE_HOURS_IN_SECONDS=10800
           CYCLES=$((THREE_HOURS_IN_SECONDS / WAIT_SECONDS))
