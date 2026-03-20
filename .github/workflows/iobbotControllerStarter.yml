@@ -50,10 +50,10 @@ jobs:
             echo "Cycle $i/$CYCLES: waiting $WAIT_MINUTES minutes..."
             sleep "$WAIT_SECONDS"
             echo "Cycle $i/$CYCLES: triggering iobbotController.yml..."
-            gh workflow run iobbotController.yml || echo "Warning: failed to trigger iobbotController.yml in cycle $i"
+            gh workflow run iobbotController.yml --repo iobroker-bot-orga/iobbot-controller || echo "Warning: failed to trigger iobbotController.yml in cycle $i"
           done
 
           echo "3 hours completed. Restarting starter workflow..."
-          gh workflow run iobbotControllerStarter.yml -f wait_minutes="$WAIT_MINUTES"
+          gh workflow run iobbotControllerStarter.yml --repo iobroker-bot-orga/iobbot-controller -f wait_minutes="$WAIT_MINUTES"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
