@@ -4,6 +4,8 @@ on:
   #repository_dispatch:
   #  types: [check-latest-repositories]
 
+  workflow_call:
+
   workflow_dispatch:
   #  inputs:
   #    repository:
