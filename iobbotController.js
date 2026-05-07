@@ -225,14 +225,23 @@ async function processNotification(notification) {
     //debug( `notification url: ${notification.url} / thread Id: ${threadId}`);
 
     console.log('');
-    if (notification.subject.type === 'Issue') {
-        console.log(`[INFO] notification with type 'ISSUE' encountered at ${notification.repository.owner.login}/${notification.repository.name}`);
-        await processIssue( notification );
-    } else{
-        console.log(`[INFO] notification with type ${notification.subject.type} encountered at ${notification.repository.owner.login}/${notification.repository.name} but ignored`);
+    try {
+        if (notification.subject.type === 'Issue') {
+            console.log(`[INFO] notification with type 'ISSUE' encountered at ${notification.repository.owner.login}/${notification.repository.name}`);
+            await processIssue( notification );
+        } else{
+            console.log(`[INFO] notification with type ${notification.subject.type} encountered at ${notification.repository.owner.login}/${notification.repository.name} but ignored`);
+        }
+    } catch (e) {
+        console.error(`[ERROR] Failed to process notification for ${notification.repository.owner.login}/${notification.repository.name}: ${e.message}`);
     }
-    await github.markNotificationDone( threadId );
-    console.log(`[INFO] notification marked as completed`);
+
+    try {
+        await github.markNotificationDone( threadId );
+        console.log(`[INFO] notification marked as completed`);
+    } catch (e) {
+        console.error(`[ERROR] Failed to mark notification ${threadId} as done: ${e.message}`);
+    }
     
 }
 
@@ -263,7 +272,12 @@ async function main() {
     console.log (`[INFO] ${notifications.length} notification(s) detected`);
 
     for (const notification of notifications) {
-        notification && await processNotification(notification);
+        if (!notification) continue;
+        try {
+            await processNotification(notification);
+        } catch (e) {
+            console.error(`[ERROR] Unexpected error processing notification: ${e.message}`);
+        }
     };
 }
 
