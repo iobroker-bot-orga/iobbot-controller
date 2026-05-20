@@ -132,7 +132,7 @@ async function executePrHelp( notification, id ) {
 async function executePrReCreate( notification, id ) {
 
     const pr = await github.getGithub( notification.subject.url );
-    const match = pr.body && pr.body.match(/^\s*Template:\s*([A-Za-z0-9_.-]+)\s*$/im);
+    const match = pr.body && pr.body.match(/^\s*\*\*Template\*\*:\s*([A-Za-z0-9_.-]+)\s*$/im);
     const template = match && match[1];
 
     if (!template) {
