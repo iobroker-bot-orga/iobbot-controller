@@ -62,7 +62,7 @@ function triggerPrCreate(owner, repository, template) {
     return axios.post(`https://api.github.com/repos/iobroker-bot-orga/manage-prs/actions/workflows/processRepository.yml/dispatches`, {
         ref: 'main',
         inputs: {
-            url: `${owner}/${repository}`,
+            repository_url: `${owner}/${repository}`,
             template,
             pr_mode: 'force creation'
         }
