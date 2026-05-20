@@ -200,13 +200,6 @@ async function processIssue( notification, id ) {
     const issue = await github.getGithub( notification.subject.url )
     debug(`ISSUE: ${JSON.stringify(issue)}`);
 
-    if (!issue.user || issue.user.login.toLowerCase() !== 'iobroker-bot') {
-        console.log(`[WARNING] issue ${issue.number} was not created by ioBroker-Bot, command processing skipped`);
-        const text = 'This issue has not been created by https://github.com/ioBroker-Bot and processing of commands is not possible.';
-        await github.addComment( notification.repository.owner.login, notification.repository.name, issue.number, text );
-        return;
-    }
-
     if (issue.comments) {
         const comments = await github.getAllComments(notification.repository.owner.login, notification.repository.name, issue.number);
 
@@ -241,10 +234,28 @@ async function processIssue( notification, id ) {
                 await github.addCommentReaction( notification.repository.owner.login, notification.repository.name, comment.id, "eyes" );
         
                 if (cmd === 'RE-CHECK') {
+                    if (!issue.user || issue.user.login.toLowerCase() !== 'iobroker-bot') {
+                        console.log(`[WARNING] issue ${issue.number} was not created by ioBroker-Bot, command processing skipped`);
+                        const text = 'This issue has not been created by https://github.com/ioBroker-Bot and processing of commands is not possible.';
+                        await github.addComment( notification.repository.owner.login, notification.repository.name, issue.number, text );
+                        return;
+                    }
                     await executeIssueReCheck( notification, issue.number);
                 } else if (cmd === 'RECHECK') {
+                    if (!issue.user || issue.user.login.toLowerCase() !== 'iobroker-bot') {
+                        console.log(`[WARNING] issue ${issue.number} was not created by ioBroker-Bot, command processing skipped`);
+                        const text = 'This issue has not been created by https://github.com/ioBroker-Bot and processing of commands is not possible.';
+                        await github.addComment( notification.repository.owner.login, notification.repository.name, issue.number, text );
+                        return;
+                    }
                     await executeIssueReCheck( notification, issue.number);
                 } else if (cmd === 'RECREATE') {
+                    if (!issue.user || issue.user.login.toLowerCase() !== 'iobroker-bot') {
+                        console.log(`[WARNING] issue ${issue.number} was not created by ioBroker-Bot, command processing skipped`);
+                        const text = 'This issue has not been created by https://github.com/ioBroker-Bot and processing of commands is not possible.';
+                        await github.addComment( notification.repository.owner.login, notification.repository.name, issue.number, text );
+                        return;
+                    }
                     await executeIssueReCreate( notification, issue.number);
                 } else if (cmd === 'HELP') {
                     await executeIssueHelp( notification, issue.number);
@@ -290,13 +301,6 @@ async function processPR( notification, id ) {
     const pr = await github.getGithub( notification.subject.url )
     debug(`PR: ${JSON.stringify(pr)}`);
 
-    if (!pr.user || pr.user.login.toLowerCase() !== 'iobroker-bot') {
-        console.log(`[WARNING] pull request ${pr.number} was not created by ioBroker-Bot, command processing skipped`);
-        const text = 'This pull request has not been created by https://github.com/ioBroker-Bot and processing of commands is not possible.';
-        await github.addComment( notification.repository.owner.login, notification.repository.name, pr.number, text );
-        return;
-    }
-
     if (pr.comments) {
         const comments = await github.getAllComments(notification.repository.owner.login, notification.repository.name, pr.number);
 
@@ -325,6 +329,12 @@ async function processPR( notification, id ) {
                 await github.addCommentReaction( notification.repository.owner.login, notification.repository.name, comment.id, "eyes" );
         
                 if (cmd === 'RECREATE' || cmd === 'REBASE') {
+                    if (!pr.user || pr.user.login.toLowerCase() !== 'iobroker-bot') {
+                        console.log(`[WARNING] pull request ${pr.number} was not created by ioBroker-Bot, command processing skipped`);
+                        const text = 'This pull request has not been created by https://github.com/ioBroker-Bot and processing of commands is not possible.';
+                        await github.addComment( notification.repository.owner.login, notification.repository.name, pr.number, text );
+                        return;
+                    }
                     await executePrReCreate( notification, pr.number);
                 } else if (cmd === 'HELP') {
                     await executePrHelp( notification, pr.number);
