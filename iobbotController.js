@@ -36,7 +36,7 @@ function triggerRepoCheck(owner, adapter, flag) {
         .catch(e => console.error(e));
 }
 
-async function executeHelp( notification, id ) {
+async function executeIssueHelp( notification, id ) {
 
     let text = '';
     text = text + 'Thanks for contacting me.  \n';
@@ -55,7 +55,29 @@ async function executeHelp( notification, id ) {
     await github.addComment( notification.repository.owner.login, notification.repository.name, id, text );
 }
 
-async function executeReCheck( notification, id ) {
+function triggerPrCreate(owner, repository, template) {
+    debug(`trigger PR creation for ${owner}/${repository} using ${template}` + ((opts.dry)?'[DRY RUN]':''));
+    if (opts.dry) return;
+
+    return axios.post(`https://api.github.com/repos/iobroker-bot-orga/manage-prs/actions/workflows/processRepository.yml/dispatches`, {
+        ref: 'main',
+        inputs: {
+            url: `${owner}/${repository}`,
+            template,
+            pr_mode: 'force creation'
+        }
+    }, {
+        headers: {
+            Authorization: `bearer ${process.env.IOBBOT_GITHUB_TOKEN}`,
+            Accept: 'application/vnd.github+json',
+            'user-agent': 'Action script'
+        },
+    })
+        .then(response => response.data)
+        .catch(e => console.error(e));
+}
+
+async function executeIssueReCheck( notification, id ) {
 
     // let text = '';
     // text = text + 'Thanks for contacting me.  \n';
@@ -71,7 +93,7 @@ async function executeReCheck( notification, id ) {
     triggerRepoCheck( notification.repository.owner.login, notification.repository.name, '--recheck' );
 }
 
-async function executeReCreate( notification, id ) {
+async function executeIssueReCreate( notification, id ) {
 
     let text = '';
     text = text + 'Thanks for contacting me.  \n';
@@ -86,6 +108,48 @@ async function executeReCreate( notification, id ) {
     await github.addComment( notification.repository.owner.login, notification.repository.name, id, text );
 
     triggerRepoCheck( notification.repository.owner.login, notification.repository.name, '--recreate' );
+}
+
+async function executePrHelp( notification, id ) {
+
+    let text = '';
+    text = text + 'Thanks for contacting me.  \n';
+    text = text + 'I will try to explain my possibilities. Currently I understand the following commands: \n';
+    text = text + '  \n';
+    text = text + '- recreate  \n';
+    text = text + '  I will recreate this PR based on the PR template used to create this PR.  \n';
+    text = text + '- rebase  \n';
+    text = text + '  Alias for recreate. I will recreate this PR based on the PR template used to create this PR.  \n';
+    text = text + '  \n';
+    text = text + '- help  \n';
+    text = text + '  I will list all commands I understand at a new comment.  \n';
+    text = text + '_your_  \n';
+    text = text + '_ioBroker Check and Service Bot_  \n';
+
+    await github.addComment( notification.repository.owner.login, notification.repository.name, id, text );
+}
+
+async function executePrReCreate( notification, id ) {
+
+    const pr = await github.getGithub( notification.subject.url );
+    const match = pr.body && pr.body.match(/^\s*Template:\s*([A-Za-z0-9_.-]+)\s*$/im);
+    const template = match && match[1];
+
+    if (!template) {
+        const text = 'I could not extract the PR template from the initial PR comment. Please ensure it contains a line like `Template: X0000-updateDependency-jsController`.';
+        await github.addComment( notification.repository.owner.login, notification.repository.name, id, text );
+        return;
+    }
+
+    let text = '';
+    text = text + 'Thanks for contacting me.  \n';
+    text = text + `I received your request to recreate this PR using template \`${template}\`. I will start doing my work soon.\n`;
+    text = text + '  \n';
+    text = text + '_your_  \n';
+    text = text + '_ioBroker Check and Service Bot_  \n';
+
+    await github.addComment( notification.repository.owner.login, notification.repository.name, id, text );
+    await triggerPrCreate(notification.repository.owner.login, notification.repository.name, template);
 }
 
 async function executeUnknown( notification, id, cmd ) {
@@ -136,6 +200,13 @@ async function processIssue( notification, id ) {
     const issue = await github.getGithub( notification.subject.url )
     debug(`ISSUE: ${JSON.stringify(issue)}`);
 
+    if (!issue.user || issue.user.login.toLowerCase() !== 'iobroker-bot') {
+        console.log(`[WARNING] issue ${issue.number} was not created by ioBroker-Bot, command processing skipped`);
+        const text = 'This issue has not been created by https://github.com/ioBroker-Bot and processing of commands is not possible.';
+        await github.addComment( notification.repository.owner.login, notification.repository.name, issue.number, text );
+        return;
+    }
+
     if (issue.comments) {
         const comments = await github.getAllComments(notification.repository.owner.login, notification.repository.name, issue.number);
 
@@ -170,13 +241,13 @@ async function processIssue( notification, id ) {
                 await github.addCommentReaction( notification.repository.owner.login, notification.repository.name, comment.id, "eyes" );
         
                 if (cmd === 'RE-CHECK') {
-                    await executeReCheck( notification, issue.number);
+                    await executeIssueReCheck( notification, issue.number);
                 } else if (cmd === 'RECHECK') {
-                    await executeReCheck( notification, issue.number);
+                    await executeIssueReCheck( notification, issue.number);
                 } else if (cmd === 'RECREATE') {
-                    await executeReCreate( notification, issue.number);
+                    await executeIssueReCreate( notification, issue.number);
                 } else if (cmd === 'HELP') {
-                    await executeHelp( notification, issue.number);
+                    await executeIssueHelp( notification, issue.number);
                 } else {
                     console.log(`[WARNING] ${cmd} cannot be recognized.`);
                     await executeUnknown(notification, issue.number, cmd);
@@ -212,6 +283,62 @@ async function processIssue( notification, id ) {
     }
 };
 
+async function processPR( notification, id ) {
+    console.log (`[INFO] Url:   ${notification.subject.url.replace('https://api.github.com/repos','https://www.github.com')}`);
+    console.log (`[INFO] Title: ${notification.subject.title}`);
+
+    const pr = await github.getGithub( notification.subject.url )
+    debug(`PR: ${JSON.stringify(pr)}`);
+
+    if (!pr.user || pr.user.login.toLowerCase() !== 'iobroker-bot') {
+        console.log(`[WARNING] pull request ${pr.number} was not created by ioBroker-Bot, command processing skipped`);
+        const text = 'This pull request has not been created by https://github.com/ioBroker-Bot and processing of commands is not possible.';
+        await github.addComment( notification.repository.owner.login, notification.repository.name, pr.number, text );
+        return;
+    }
+
+    if (pr.comments) {
+        const comments = await github.getAllComments(notification.repository.owner.login, notification.repository.name, pr.number);
+
+        console.log( `[INFO] pull request ${pr.number} has ${comments.length} comment(s)`);
+    
+        for (const comment of comments) {
+            debug(`COMMENT: ${JSON.stringify(comment)}`);
+            debug(`COMMENT: ${comment.body}`)
+            
+            let cmd = '';
+            if (comment.body) {
+                const m = comment.body.match(/^\s*@iobroker-bot\s+(\w+)\s*$/i);
+                if (m) {
+                    cmd = m[1];
+                }
+            }   
+
+            if (cmd) {
+                cmd = cmd.toUpperCase();
+                if (comment.reactions.eyes)  {            
+                    console.log(`[INFO] ${cmd} detected at ${notification.repository.owner.login}/${notification.repository.name} was already processed`);
+                    continue; // looks like I was here already
+                }
+                
+                console.log(`[INFO] ${cmd} detected at ${notification.repository.owner.login}/${notification.repository.name}`);
+                await github.addCommentReaction( notification.repository.owner.login, notification.repository.name, comment.id, "eyes" );
+        
+                if (cmd === 'RECREATE' || cmd === 'REBASE') {
+                    await executePrReCreate( notification, pr.number);
+                } else if (cmd === 'HELP') {
+                    await executePrHelp( notification, pr.number);
+                } else {
+                    console.log(`[WARNING] ${cmd} cannot be recognized.`);
+                    await executeUnknown(notification, pr.number, cmd);
+                }
+            }        
+        }
+    } else {
+        console.log( `[INFO] pull request ${pr.number} has NO comment(s) attached`);
+    }
+};
+
 async function processNotification(notification) {
 
 //if (notification.repository.name != 'ioBroker.snmp') return;
@@ -228,6 +355,9 @@ async function processNotification(notification) {
     if (notification.subject.type === 'Issue') {
         console.log(`[INFO] notification with type 'ISSUE' encountered at ${notification.repository.owner.login}/${notification.repository.name}`);
         await processIssue( notification );
+    } else if (notification.subject.type === 'PullRequest') {
+        console.log(`[INFO] notification with type 'PULL REQUEST' encountered at ${notification.repository.owner.login}/${notification.repository.name}`);
+        await processPR( notification );
     } else{
         console.log(`[INFO] notification with type ${notification.subject.type} encountered at ${notification.repository.owner.login}/${notification.repository.name} but ignored`);
     }
