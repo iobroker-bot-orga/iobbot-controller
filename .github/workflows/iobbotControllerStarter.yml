@@ -6,14 +6,14 @@ on:
       wait_minutes:
         description: 'Time to wait in minutes between controller runs'
         type: number
-        default: 10
+        default: 20
 
   workflow_dispatch:
     inputs:
       wait_minutes:
         description: 'Time to wait in minutes between controller runs'
         type: string
-        default: '10'
+        default: '20'
 
   schedule:
     # * is a special character in YAML, so you have to quote this string
