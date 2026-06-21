@@ -15,10 +15,10 @@ on:
         type: string
         default: '20'
 
-  schedule:
-    # * is a special character in YAML, so you have to quote this string
-    # every day at 0:30
-    - cron: '30 0 * * *'
+#  schedule:
+#    # * is a special character in YAML, so you have to quote this string
+#    # every day at 0:30
+#    - cron: '30 0 * * *'
 
 concurrency:
   group: iobbot-controller-starter
@@ -39,7 +39,7 @@ jobs:
       - name: Run controller in loop for ~3 hours then restart
         run: |
           WAIT_MINUTES_INPUT="${{ inputs.wait_minutes }}"
-          WAIT_MINUTES=${WAIT_MINUTES_INPUT:-10}
+          WAIT_MINUTES=${WAIT_MINUTES_INPUT:-20}
           WAIT_SECONDS=$((WAIT_MINUTES * 60))
           THREE_HOURS_IN_SECONDS=10800
           CYCLES=$((THREE_HOURS_IN_SECONDS / WAIT_SECONDS))
